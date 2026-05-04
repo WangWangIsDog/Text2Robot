@@ -17,10 +17,15 @@ import pickle
 import argparse
 import yourdfpy
 
-max_generations = 55 # Customize how many evolutionary generations you want to run
+# CHANGED: Faster debug parameters
+max_generations = 2 # Customize how many evolutionary generations you want to run
 
 inform_based_on_energy = False # You can set one of these options to true to evolve for a particular preference
 inform_based_on_velocity = False
+
+# CHANGED: Add explicit population control parameters
+survivor_size = 10 # CHANGED: Original script kept top 100 robots
+population_size = 20 # CHANGED: Original script generated until >199 robots
 
 rough_terrain = False # Set to true to test robots on rough terrain (longer training time)
 
@@ -143,8 +148,8 @@ while(gen < max_generations + 1): # Continue evolving until termination criteria
 
     best_bot = sorted_robots[0][0] 
 
-    top_robots = dict(sorted_robots[:100])
-    archive.update(sorted_robots[100:])
+    top_robots = dict(sorted_robots[:survivor_size]) # CHANGED: was [:100]
+    archive.update(sorted_robots[survivor_size:]) # CHANGED: was [100:]
     robots = dict(top_robots)
     archive = dict(archive)
     
@@ -156,7 +161,7 @@ while(gen < max_generations + 1): # Continue evolving until termination criteria
         gen = gen + 1
 
     count = 0 # Use to make sure genetic isolation doesn't occur
-    while len(robots) < 100:  # Use crossover to create 4 new offspring using combinations of the best previous generation
+    while len(robots) < survivor_size:  # CHANGED: was 100; Use crossover to create 4 new offspring using combinations of the best previous generation
         while True:
             parent_1 = random.choice(list(robots.keys()))
             parent_2 = random.choice(list(robots.keys()))
@@ -283,7 +288,7 @@ while(gen < max_generations + 1): # Continue evolving until termination criteria
 
     while True:
         for robot_1_name in list(robots.keys()):
-            if len(robots) > 199:
+            if len(robots) >= population_size:  # CHANGED: was > 199
                 stop_generating_flag = True
                 break
             # Mutate link with a 15% chance
